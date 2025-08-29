@@ -1,12 +1,12 @@
 import sys
 import os
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer, QTime
 from PyQt5.QtGui import QMovie
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMenu, QAction
 
 class GifWindow(QWidget):
    def contextMenuEvent(self, event):
-      from PyQt5.QtWidgets import QMenu, QAction
+      # from PyQt5.QtWidgets import QMenu, QAction
       menu = QMenu(self)
       exit_action = QAction('退出', self)
       exit_action.triggered.connect(self.close)
@@ -18,7 +18,7 @@ class GifWindow(QWidget):
    def __init__(self, gif_path, parent=None):
       super().__init__(parent)
       self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-      self.setAttribute(Qt.WA_TranslucentBackground)
+      # self.setAttribute(Qt.WA_TranslucentBackground)
       self.label = QLabel(self)
       self.label.setStyleSheet("background: transparent;")
       self.dance_gif_path = gif_path
@@ -39,33 +39,38 @@ class GifWindow(QWidget):
       self._startup_appear()
 
    def _startup_appear(self):
-      from PyQt5.QtCore import QTimer
-      self.set_gif(self.appear_gif_path)
+      # from PyQt5.QtCore import QTimer
+      self.set_puppy(self.appear_gif_path)
       timer = QTimer(self)
       timer.setSingleShot(True)
       def show_dance():
-         self.set_gif(self.dance_gif_path)
+         self.set_puppy(self.dance_gif_path,100,100)
       timer.timeout.connect(show_dance)
       timer.start(3000)
 
-   def set_gif(self, gif_path):
+   def set_puppy(self, gif_path, width=None, height=None):
       if hasattr(self, 'movie'):
          self.movie.stop()
       self.movie = QMovie(gif_path)
       self.label.setMovie(self.movie)
+      self._custom_width = width
+      self._custom_height = height
+      self.label.setAlignment(Qt.AlignCenter)  # 图片居中显示
       self.movie.frameChanged.connect(self._resize_frame)
       self.movie.start()
 
    def _resize_frame(self):
-      # 获取当前帧并缩放到窗口大小，保持长宽比
+      # 获取当前帧并缩放到指定大小，保持长宽比
       pixmap = self.movie.currentPixmap()
       if not pixmap.isNull():
-         scaled = pixmap.scaled(self.fixed_width, self.fixed_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+         w = self._custom_width if self._custom_width else self.fixed_width
+         h = self._custom_height if self._custom_height else self.fixed_height
+         scaled = pixmap.scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
          self.label.setPixmap(scaled)
 
    def mousePressEvent(self, event):
       if event.button() == Qt.LeftButton:
-         from PyQt5.QtCore import QTimer, QTime
+         # from PyQt5.QtCore import QTimer, QTime
          self._drag_active = True
          self._drag_position = event.globalPos() - self.frameGeometry().topLeft()
          self._press_time = QTime.currentTime()
@@ -97,7 +102,7 @@ class GifWindow(QWidget):
          if not self._pick_up_mode and elapsed < 100:
             self.play_rua_once()
          else:
-            self.set_gif(self.dance_gif_path)
+            self.set_puppy(self.dance_gif_path,100,100)
          self._pick_up_mode = False
          event.accept()
       else:
@@ -107,16 +112,16 @@ class GifWindow(QWidget):
       # 0.1秒后还未松开，切换为pick_up
       if self._drag_active:
          self._pick_up_mode = True
-         self.set_gif(self.pickup_gif_path)
+         self.set_puppy(self.pickup_gif_path)
 
    def play_rua_once(self):
       if self._is_rua_playing:
          return
       self._is_rua_playing = True
-      self.set_gif(self.rua_gif_path)
-      from PyQt5.QtCore import QTimer
+      self.set_puppy(self.rua_gif_path)
+      # from PyQt5.QtCore import QTimer
       def restore():
-         self.set_gif(self.dance_gif_path)
+         self.set_puppy(self.dance_gif_path,100,100)
          self._is_rua_playing = False
       timer = QTimer(self)
       timer.setSingleShot(True)
