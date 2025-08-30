@@ -10,7 +10,7 @@ from Icons import IconManager
 
 class GifWindow(QWidget):
    def puppy_context_menu(self, event):
-      # 右键puppy时，icon飞出
+      # 右键puppy时，从窗口中心开始动画显示icons
       puppy_rect = self.puppy.label.geometry()
       center_x = puppy_rect.center().x()
       center_y = puppy_rect.center().y()
@@ -60,32 +60,33 @@ class GifWindow(QWidget):
    # _resize_frame 由 PuppyAnimator 管理
 
    def mousePressEvent(self, event):
-      print(f"Mouse press at: {event.pos()}, button: {event.button()}")
-      
-      # 优先icon点击
-      if self.icon_manager.center_pos is not None:
+      # 优先处理icon点击（只在icons显示且不在动画中时）
+      if (self.icon_manager.center_pos is not None and 
+          not self.icon_manager.is_showing and 
+          not self.icon_manager.is_hiding):
          icon = self.icon_manager.icon_at_pos(event.pos())
          if icon:
             # tennis图标左键单击时退出
             if event.button() == Qt.LeftButton:
-               print("Tennis icon clicked - exiting")
                QApplication.quit()
                return
             # 其它icon点击可扩展
             return
          else:
-            # 点击空白，icon回收
-            print("Clicked empty space - hiding icons")
+            # 点击空白区域，隐藏icons
             self.icon_manager.hide_icons()
             return
       
-      # 右键puppy弹出icon
-      if event.button() == Qt.RightButton and self.puppy.label.geometry().contains(event.pos()):
-         print("Right clicking puppy - showing icons")
+      # 右键puppy弹出icon（只在icons未显示且不在动画中时）
+      if (event.button() == Qt.RightButton and 
+          self.puppy.label.geometry().contains(event.pos()) and
+          self.icon_manager.center_pos is None and
+          not self.icon_manager.is_showing and 
+          not self.icon_manager.is_hiding):
          self.puppy_context_menu(event)
          return
       
-      # 其它交互
+      # 其他puppy交互（在icons未显示或动画期间仍可进行）
       handled = False
       if hasattr(self, 'puppy'):
          handled = self.puppy.mousePressEvent(event) or handled
