@@ -1,7 +1,8 @@
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QLabel, QApplication
 import math
+import os
 
 
 class IconManager:
@@ -18,6 +19,17 @@ class IconManager:
 		self.is_hiding = False   # 是否正在隐藏动画
 		self.start_positions = []  # 动画开始位置
 		self.end_positions = []    # 动画结束位置
+		
+		# 初始化图标
+		self._setup_icons()
+	
+	def _setup_icons(self):
+		"""初始化所有图标"""
+		source_dir_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../resources/'))
+		
+		# 添加网球图标
+		exit_png_path = os.path.join(source_dir_path, 'exit.png')
+		self.add_icon(exit_png_path, -70, -70, 30, 30)  # 左上角
 
 	def add_icon(self, image_path, x, y, w, h):
 		label = QLabel(self.parent)
@@ -150,3 +162,35 @@ class IconManager:
 			if label.isVisible() and label.geometry().contains(pos):
 				return label
 		return None
+
+	def handle_mouse_press(self, event):
+		"""处理鼠标按下事件，返回是否处理了事件"""
+		# 优先处理icon点击（只在icons显示且不在动画中时）
+		if (self.center_pos is not None and 
+		    not self.is_showing and 
+		    not self.is_hiding):
+			icon = self.icon_at_pos(event.pos())
+			if icon:
+				# exit图标左键单击时退出
+				if event.button() == Qt.LeftButton:
+					QApplication.quit()
+					return True
+				# 其它icon点击可扩展
+				return True
+			else:
+				# 点击空白区域，隐藏icons
+				self.hide_icons()
+				return True
+		return False
+
+	def show_icons_from_puppy(self, puppy_rect):
+		"""从puppy位置显示图标"""
+		# 只在icons未显示且不在动画中时才显示
+		if (self.center_pos is None and
+		    not self.is_showing and 
+		    not self.is_hiding):
+			center_x = puppy_rect.center().x()
+			center_y = puppy_rect.center().y()
+			self.show_icons(center_x, center_y)
+			return True
+		return False
