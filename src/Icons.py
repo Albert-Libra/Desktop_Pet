@@ -29,7 +29,7 @@ class IconManager:
 		
 		# 添加网球图标
 		exit_png_path = os.path.join(source_dir_path, 'exit.png')
-		self.add_icon(exit_png_path, -70, -70, 30, 30)  # 左上角
+		self.add_icon(exit_png_path, 40, -70, 30, 30)  # 左上角
 
 	def add_icon(self, image_path, x, y, w, h):
 		label = QLabel(self.parent)

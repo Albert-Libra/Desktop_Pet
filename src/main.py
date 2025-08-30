@@ -1,10 +1,9 @@
-import sys
-import os
+import sys, os
 
 from PyQt5.QtCore import Qt, QTimer, QTime
-
 from PyQt5.QtGui import QMovie, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMenu, QAction
+
 from Puppy import PuppyAnimator
 from Icons import IconManager
 
@@ -24,9 +23,7 @@ class GifWindow(QWidget):
       self.fixed_height = 150
       self.setFixedSize(self.fixed_width, self.fixed_height)
 
-      # 小狗动画管理
       self.puppy = PuppyAnimator(self, self.source_dir_path, self.fixed_width, self.fixed_height)
-      # 图标管理
       self.icon_manager = IconManager(self)
 
       self._drag_active = False
@@ -50,7 +47,6 @@ class GifWindow(QWidget):
    def set_puppy(self, gif_path, width=None, height=None, x=None, y=None):
       self.puppy.set_puppy(gif_path, width, height, x, y)
    
-   # def set_button(self, gif_path, width=None, height=None):
 
    # _resize_frame 由 PuppyAnimator 管理
 
